@@ -62,11 +62,12 @@ SCRIPT_LOC=$(get_script_location) || (echo "ERROR getting script location" && re
 export ACCELSIM_SETUP_ENVIRONMENT_WAS_RUN=
 export ACCELSIM_ROOT="$( cd "$( dirname "$SCRIPT_LOC" )" && pwd )"
 
-#   Different branches of Accel-Sim should have different values here
-#   For development, we use our internal repo and the dev branch
-#       Ideally, when we release, it should be based off a GPGPU-Sim release.
-export GPGPUSIM_REPO="${GPGPUSIM_REPO:=https://github.com/accel-sim/gpgpu-sim_distribution.git}"
-export GPGPUSIM_BRANCH="${GPGPUSIM_BRANCH:=dev}"
+# This fork defaults to one tested backend commit. Explicit repository/branch
+# overrides remain available for upstream development; PNMServing uses the pin.
+pnm_backend_pin=$(python3 -c 'import json,sys; p=json.load(open(sys.argv[1]))["backend"]; print(p["repository"], p["revision"])' "$ACCELSIM_ROOT/../pnm-toolchain.json") || return 1
+read -r pnm_backend_repo pnm_backend_revision <<< "$pnm_backend_pin"
+export GPGPUSIM_REPO="${GPGPUSIM_REPO:=$pnm_backend_repo}"
+export GPGPUSIM_BRANCH="${GPGPUSIM_BRANCH:=$pnm_backend_revision}"
 
 # Help the user out by setting the default CUDA_INSTALL_PATH, if it is not already set
 if [ -z "$CUDA_INSTALL_PATH" ]; then
@@ -89,35 +90,25 @@ fi
 
 ln -sf $ACCELSIM_ROOT/build/$ACCELSIM_CONFIG/compile_commands.json $ACCELSIM_ROOT/../
 
-# If we can't find an already set version of GPGPU-Sim, then pull one locally using the repos specificed above
-if [ -z "$GPGPUSIM_SETUP_ENVIRONMENT_WAS_RUN" -o ! -d "$GPGPUSIM_ROOT" ]; then
-    echo "No \$GPGPUSIM_ROOT, testing for local folder in: \"$ACCELSIM_ROOT/gpgpu-sim\""
-    if [ ! -d "$ACCELSIM_ROOT/gpgpu-sim" ] ; then
-        echo "No \$ACCELSIM_ROOT/gpgpu-sim."
-        # If in an interactive shell, then prompt the user for the repo
-        if [ ! -z "$PS1" ]; then
-            user_repo=$(read_user_input "Please specify the repo you want to sync for GPGPU-Sim (default is $GPGPUSIM_REPO):")
-        fi
-        if [ -z $user_repo ] ; then
-            user_repo=$GPGPUSIM_REPO
-        fi
-
-        # If in an interactive shell, then prompt the user for the branch
-        if [ ! -z "$PS1" ]; then
-            user_branch=$(read_user_input "Please specify the branch for GPGPU-Sim you would like to use (default is $GPGPUSIM_BRANCH):")
-        fi
-        if [ -z $user_branch ] ; then
-            user_branch=$GPGPUSIM_BRANCH
-        fi
-        git clone $user_repo $ACCELSIM_ROOT/gpgpu-sim
-        git -C $ACCELSIM_ROOT/gpgpu-sim/ checkout $user_branch
-    else
-        echo "Found $ACCELSIM_ROOT/gpgpu-sim, using existing local location. Not sycning anything."
+# Use the pinned revision on a fresh checkout; never silently replace a user's
+# existing checkout. A mismatched default checkout is an error.
+if [ -z "$GPGPUSIM_SETUP_ENVIRONMENT_WAS_RUN" ] || [ ! -d "$GPGPUSIM_ROOT" ]; then
+    accelsim_backend="$ACCELSIM_ROOT/gpgpu-sim"
+    if [ ! -d "$accelsim_backend" ]; then
+        git clone "$GPGPUSIM_REPO" "$accelsim_backend" || return 1
+        git -C "$accelsim_backend" checkout --detach "$GPGPUSIM_BRANCH" || return 1
     fi
-    source $ACCELSIM_ROOT/gpgpu-sim/setup_environment $ACCELSIM_CONFIG || return 1
 else
-    source $GPGPUSIM_ROOT/setup_environment $ACCELSIM_CONFIG || return 1
+    accelsim_backend="$GPGPUSIM_ROOT"
 fi
+if [ "$GPGPUSIM_REPO" = "$pnm_backend_repo" ] && [ "$GPGPUSIM_BRANCH" = "$pnm_backend_revision" ]; then
+    actual_backend=$(git -C "$accelsim_backend" rev-parse HEAD) || return 1
+    if [ "$actual_backend" != "$pnm_backend_revision" ]; then
+        echo "ERROR: backend $actual_backend differs from pinned $pnm_backend_revision in $accelsim_backend" >&2
+        return 1
+    fi
+fi
+source "$accelsim_backend/setup_environment" "$ACCELSIM_CONFIG" || return 1
 
 if [ ! -d "$ACCELSIM_ROOT/extern/pybind11" ] ; then
     git clone --depth 1 -b master https://github.com/pybind/pybind11.git $ACCELSIM_ROOT/extern/pybind11

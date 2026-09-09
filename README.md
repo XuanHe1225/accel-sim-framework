@@ -1,5 +1,7 @@
 # Accel-Sim 2.0 — Validated GPU Simulation with full Hopper support
 
+PNMServing fork: see [the pinned A100 toolchain and regression instructions](README.pnmserving.md).
+
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/accel-sim/accel-sim-framework) [![CI Runs](https://github.com/accel-sim/accel-sim-framework/actions/workflows/main.yml/badge.svg?branch=dev&event=push)](https://github.com/accel-sim/accel-sim-framework/actions/workflows/main.yml)
 
 Accel-Sim is an extensible, **validated** framework for cycle-level GPU simulation.
