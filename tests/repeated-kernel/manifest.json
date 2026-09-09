@@ -1,0 +1,17 @@
+{
+  "description": "Three complete repeated TileLang GEMMs, two CTAs per kernel; NVBit v1.8, TRACE_LINEINFO=0, ARCH=all on RTX A6000 (sm86). Regression fixture for the official SM80_A100 simulation model, not an A100 hardware measurement.",
+  "framework_upstream": "d930ad6d02c09bb56867132583735aba0389cff4",
+  "backend_upstream": "91880c53383d5a6a6742bfb1be2c5f34e39c7871",
+  "tilelang_revision": "f4ec05c658bffa97dd51b36362f20d6f77f5217c",
+  "copy_audit": {
+    "activation_bytes_per_kernel": 1048576,
+    "weight_bytes_per_kernel": 2097152,
+    "warp_copies_per_kernel": 6144
+  },
+  "sha256": {
+    "kernelslist.g": "23565827862180eb825a7092ae83c84a1817ae3c0a4335fbde82a4849ebc568a",
+    "kernel-1119-ctx_0x424c3c00.tracez": "644c24699e24bca0f1b73bf6b3337adc9bc88a810e70d5aa1680ed6eed13dfdc",
+    "kernel-1120-ctx_0x424c3c00.tracez": "980a8bf432b11081c6085a8ae77707537f312ad210091d5695f3828f2fdd51cd",
+    "kernel-1121-ctx_0x424c3c00.tracez": "370b77e52d753c86d28fac58225d33376f09c31cf847f27a73df9f4a40d20271"
+  }
+}
