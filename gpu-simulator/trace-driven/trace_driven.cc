@@ -322,21 +322,29 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   outcount = trace.reg_dsts_num;
   // For now, we only model regular registers usage
   auto convert_reg_num = [&](const trace_reg_t &reg) -> uint32_t {
-    if (reg.type == REG)
+    if (reg.type == REG &&
+        (!tconfig->register_constants() || reg.num != 255))
       return reg.num + 1;  // Increment by one because GPGPU-sim starts
                            // from R1, while SASS starts from R0
     else
       return 0;
   };
+  // Scoreboard uses zero for an absent vector dependency; the operand
+  // collector instead requires -1 for an absent vector RF access. R255 is
+  // the constant-zero register, and uniform operands use a separate file.
+  // Keep the legacy mapping available for exact disabled controls.
+  if (tconfig->register_constants()) num_regs = 0;
   for (unsigned m = 0; m < trace.reg_dsts_num; ++m) {
     out[m] = convert_reg_num(trace.reg_dest[m]);
-    arch_reg.dst[m] = convert_reg_num(trace.reg_dest[m]);
+    arch_reg.dst[m] = tconfig->register_constants() && !out[m] ? -1 : int(out[m]);
+    if (tconfig->register_constants() && out[m]) ++num_regs;
   }
 
   incount = trace.reg_srcs_num;
   for (unsigned m = 0; m < trace.reg_srcs_num; ++m) {
     in[m] = convert_reg_num(trace.reg_src[m]);
-    arch_reg.src[m] = convert_reg_num(trace.reg_src[m]);
+    arch_reg.src[m] = tconfig->register_constants() && !in[m] ? -1 : int(in[m]);
+    if (tconfig->register_constants() && in[m]) ++num_regs;
   }
 
   // fill latency and initl
@@ -861,6 +869,10 @@ void trace_warp_inst_t::parseSASSInstruction(
 trace_config::trace_config() {}
 
 void trace_config::reg_options(option_parser_t opp) {
+  option_parser_register(opp, "-pnm_trace_register_constants", OPT_BOOL,
+                         &pnm_trace_register_constants,
+                         "Exclude RZ and uniform operands from vector RF access",
+                         "0");
   option_parser_register(opp, "-trace", OPT_CSTR, &g_traces_filename,
                          "traces kernel file"
                          "traces kernel file directory",
