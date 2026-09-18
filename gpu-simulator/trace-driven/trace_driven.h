@@ -241,6 +241,7 @@ class trace_shader_core_ctx : public shader_core_ctx {
   virtual void init_warps(unsigned cta_id, unsigned start_thread,
                           unsigned end_thread, unsigned ctaid, int cta_size,
                           kernel_info_t &kernel);
+  bool custom_trace_overlap_capable() const override {return true;}
   virtual void func_exec_inst(warp_inst_t &inst);
   virtual unsigned sim_init_thread(kernel_info_t &kernel,
                                    ptx_thread_info **thread_info, int sid,
