@@ -1,7 +1,7 @@
 {
   "backend": {
     "repository": "https://github.com/XuanHe1225/gpgpu-sim_distribution.git",
-    "revision": "30585fdc858ffbee79ec3a58ebb700e92df3ea7d",
+    "revision": "272bde4bedb7d7e1e28a6b33ce1b52b3e3a20084",
     "upstream_revision": "91880c53383d5a6a6742bfb1be2c5f34e39c7871"
   },
   "nvbit": {
