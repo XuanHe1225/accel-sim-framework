@@ -492,6 +492,9 @@ static void parse_kernel_header_line(const std::string &line,
   std::cout << line << std::endl;
 }
 
+#include "../gpgpu-sim/src/gpgpu-sim/pnm_carveout.h"
+#include <fstream>
+
 kernel_trace_t *trace_parser::parse_kernel_info(
     const std::string &kerneltraces_filepath) {
   std::cout << "Processing kernel " << kerneltraces_filepath << std::endl;
@@ -527,6 +530,12 @@ kernel_trace_t *trace_parser::parse_kernel_info(
     }
   }
 
+  if (getenv("PNMSERVING_MEASURED_CARVEOUT")) {
+    std::ifstream sidecar(kerneltraces_filepath + ".carveout");
+    auto row = pnm_carveout::parse(sidecar, kernel_info->kernel_name, kernel_info->shmem);
+    kernel_info->measured_shared_carveout = row.shared;
+    kernel_info->measured_shared_per_cta = row.allocated;
+  }
   // do not close the file ifs, the kernel_finalizer will close it
   return kernel_info;
 }

@@ -179,6 +179,8 @@ struct kernel_trace_t {
   unsigned tb_dim_y;
   unsigned tb_dim_z;
   unsigned shmem;
+  int measured_shared_carveout = -1;
+  unsigned measured_shared_per_cta = 0;
   unsigned nregs;
   unsigned long long cuda_stream_id;
   unsigned binary_verion;

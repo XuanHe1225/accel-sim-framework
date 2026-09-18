@@ -188,6 +188,8 @@ trace_kernel_info_t *accel_sim_framework::create_kernel_info(kernel_trace_t *ker
   trace_kernel_info_t *kernel_info = new trace_kernel_info_t(
       gridDim, blockDim, function_info, parser, config, kernel_trace_info);
 
+  kernel_info->measured_shared_carveout = kernel_trace_info->measured_shared_carveout;
+  kernel_info->measured_shared_per_cta = kernel_trace_info->measured_shared_per_cta;
   return kernel_info;
 }
 
