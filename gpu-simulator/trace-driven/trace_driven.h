@@ -132,10 +132,10 @@ class trace_config {
   void parse_config();
   void reg_options(option_parser_t opp);
   char *get_traces_filename() { return g_traces_filename; }
-  bool register_constants() const { return pnm_trace_register_constants; }
+  bool register_constants() const { return custom_trace_register_constants; }
 
  private:
-  bool pnm_trace_register_constants = false;
+  bool custom_trace_register_constants = false;
   unsigned int_latency, fp_latency, dp_latency, sfu_latency, tensor_latency;
   unsigned int_init, fp_init, dp_init, sfu_init, tensor_init;
   unsigned specialized_unit_latency[SPECIALIZED_UNIT_NUM];

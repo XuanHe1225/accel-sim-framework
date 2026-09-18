@@ -869,8 +869,8 @@ void trace_warp_inst_t::parseSASSInstruction(
 trace_config::trace_config() {}
 
 void trace_config::reg_options(option_parser_t opp) {
-  option_parser_register(opp, "-pnm_trace_register_constants", OPT_BOOL,
-                         &pnm_trace_register_constants,
+  option_parser_register(opp, "-custom_trace_register_constants", OPT_BOOL,
+                         &custom_trace_register_constants,
                          "Exclude RZ and uniform operands from vector RF access",
                          "0");
   option_parser_register(opp, "-trace", OPT_CSTR, &g_traces_filename,
