@@ -2,6 +2,7 @@
 // abdallm@purdue.edu
 
 #include <bits/stdc++.h>
+#include "../gpgpu-sim/src/gpgpu-sim/custom_insight_address.h"
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -326,6 +327,11 @@ bool inst_trace_t::parse_from_string(std::string trace, unsigned trace_version,
     }
   }
 
+  if (memadd_info && opcode.rfind("LDGSTS", 0) == 0 && custom_insight::settings().mode) {
+    assert(memadd_info->width == 16);
+    for (unsigned lane=0; lane<WARP_SIZE; ++lane)
+      if (mask_bits.test(lane)) memadd_info->addrs[lane]=custom_insight::transform(memadd_info->addrs[lane]);
+  }
   ss >> imm;
   imm2 = 0;
   if (trace_version == 6) {
